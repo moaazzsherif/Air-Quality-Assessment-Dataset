@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix
-
+import altair as alt
 # -------------------------------
 # Load Model
 # -------------------------------
@@ -80,9 +80,25 @@ if hasattr(best_model, "feature_importances_"):
 # Load dataset if available
 try:
     df = pd.read_csv("updated_pollution_dataset.csv")  # Change filename to match your dataset
-    st.subheader("Average Pollutants by Air Quality Level")
-    avg_pollutants = df.groupby("Air Quality")[["PM2.5","PM10","NO2","SO2","CO"]].mean()
-    st.bar_chart(avg_pollutants)
+    # st.subheader("Average Pollutants by Air Quality Level")
+    #avg_pollutants = df.groupby("Air Quality")[["PM2.5","PM10","NO2","SO2","CO"]].mean()
+    # st.bar_chart(avg_pollutants)
+    if 'df' in globals():
+        st.subheader("Average Pollutants by Air Quality Level")
+
+        avg_pollutants = df.groupby("Air Quality")[["PM2.5","PM10","NO2","SO2","CO"]].mean()
+        avg_pollutants = avg_pollutants.reset_index().melt(id_vars="Air Quality",
+                                                        var_name="Pollutant",
+                                                        value_name="Average Value")
+
+        chart = alt.Chart(avg_pollutants).mark_bar().encode(
+            x='Pollutant:N',
+            y='Average Value:Q',
+            color='Air Quality:N',
+            column='Air Quality:N'  
+    ).properties(width=100, height=300)
+
+    st.altair_chart(chart, use_container_width=True)
 except FileNotFoundError:
     st.info("Dataset file not found. Please ensure 'updated_pollution_dataset.csv' is in the same directory.")
 except Exception as e:
